@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="js/smoothie.js"></script>
+        <script type="text/javascript" src="js/socket.io.js"></script>
+        <script type="text/javascript">
+            // TimeSeries for chart
+            var counterTS = new TimeSeries();
+            var filterTS = new TimeSeries();
+
+            var socket = io.connect();
+            socket.on("counterValue", function(msg) {
+               //counterTS.append(msg.timestamp, msg.value);
+               counterTS.append(new Date().getTime(), msg);
+            });
+
+            socket.on("filterValue", function(msg) {
+               filterTS.append(new Date().getTime(), msg);
+            });
+
+            socket.on("filterConstant", function(msg) {
+               document.getElementById("filterConstant").value = msg;
+            });
+
+            function getRange(range) { return {min: 0, max: 100}; }
+
+            function createTimeline() {
+               // bezier, linear, step
+              var chart = new SmoothieChart({interpolation:'linear', yRangeFunction:getRange});
+              chart.addTimeSeries(counterTS, { strokeStyle: 'rgba(0, 255, 0, 1)', fillStyle: 'rgba(0, 255, 0, 0.2)', lineWidth: 4 });
+              chart.addTimeSeries(filterTS, { strokeStyle: 'rgba(255, 0, 255, 1)', fillStyle: 'rgba(255, 0, 255, 0.2)', lineWidth: 4 });
+              chart.streamTo(document.getElementById("chart"),1000);
+            }
+
+            function setCounterUp() {
+               console.log("setCounterUp() called");
+               socket.emit("counterCmd","up");
+            }
+
+            function setCounterDown() {
+               console.log("setCounterDown() called");
+               socket.emit("counterCmd","down");
+            }
+
+            function setCounterValue() {
+               var value = document.getElementById("countValue").value;
+               console.log("setCounterValue() called with value = " + value);
+               socket.emit("setCounterValue",value);
+            }
+
+            function setFilterConstant() {
+               var value = document.getElementById("filterConstant").value;
+               console.log("setFilterConstant() called with value = " + value);
+               socket.emit("setFilterConstant",value);
+            }
+         </script>
+    </head>
+    <body onload="createTimeline()">
+        <p>
+            <em>Counter Service</em> control panel using
+            <a href="../">Smoothie Charts</a>.
+        </p>
+        <canvas id="chart" width="640" height="480"></canvas>
+        <HR>
+            <div>
+                <p>Control Counter Service</p>
+                <button id="setUp" onclick="setCounterUp()">Count UP</button>
+                <button id="setDown" onclick="setCounterDown()">Count DOWN</button>
+            </div>
+            <div>
+                <p></p>
+      Set Counter Value:
+
+                <input type="text" id="countValue" name="Set the count value: " style="width: 50px;" />
+                <button id="setCount" onclick="setCounterValue()">Set</button>
+                <HR>
+                </div>
+                <div>
+                    <p>Control Filter Service</p>
+      Filter Constant Value (0.0 - 1.0):
+
+                    <input type="text" id="filterConstant" name="Set the filter constant: " style="width: 50px;" />
+                    <button id="setFilter" onclick="setFilterConstant()">Set</button>
+                </div>
+            </body>
+        </html>
