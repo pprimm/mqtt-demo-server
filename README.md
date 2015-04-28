@@ -11,5 +11,3 @@ The following diagram shows the architecture for the demo.  There are three (3) 
  3. The mqtt.js client that implements the MQTT-to-socket.io bridge to expose the MQTT topics to Socket.io
 
 ![Demo Architecture](https://github.com/pprimm/mqtt-demo-server/blob/master/architecture.png)
-
-[Demo Architecture](https://github.com/pprimm/mqtt-demo-server/blob/master/architecture.png)
